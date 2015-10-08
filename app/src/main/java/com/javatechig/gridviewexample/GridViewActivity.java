@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -15,7 +16,6 @@ import android.widget.Toast;
 import com.javatechig.gridviewexample.retrogram.Instagram;
 import com.javatechig.gridviewexample.retrogram.model.Media;
 import com.javatechig.gridviewexample.retrogram.model.Popular;
-
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,6 +30,7 @@ public class GridViewActivity extends ActionBarActivity {
 
     private GridView mGridView;
     private ProgressBar mProgressBar;
+    Button button;
 
     private GridViewAdapter mGridAdapter;
     private ArrayList<GridItem> mGridData;
@@ -47,6 +48,7 @@ public class GridViewActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gridview);
+        addListenerOnButton();
 
         mGridView = (GridView) findViewById(R.id.gridView);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -89,6 +91,23 @@ public class GridViewActivity extends ActionBarActivity {
         //Start download
         new AsyncHttpTask().execute();
         mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+
+    public void addListenerOnButton() {
+
+        button = (Button) findViewById(R.id.button1);
+
+        button.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                new AsyncHttpTask().execute();
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+
+        });
+
     }
 
 
