@@ -1,6 +1,7 @@
 package com.javatechig.gridviewexample;
 
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -15,15 +16,14 @@ import android.widget.Toast;
 
 import com.javatechig.gridviewexample.retrogram.Instagram;
 import com.javatechig.gridviewexample.retrogram.model.Media;
-import com.javatechig.gridviewexample.retrogram.model.Popular;
+import com.javatechig.gridviewexample.retrogram.model.SearchMediaResponse;
+import com.javatechig.gridviewexample.util.GPSTracker;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-
-import retrofit.RestAdapter;
 
 public class GridViewActivity extends ActionBarActivity {
     private static final String TAG = GridViewActivity.class.getSimpleName();
@@ -39,10 +39,21 @@ public class GridViewActivity extends ActionBarActivity {
     protected static String AccessToken = "398315918.19f142f.1a6004bc7ce04dc1bc0a7914095a30cb";
     protected static String ClientId = "19f142f8b92641e7b528497c9d206379";
 
-    protected static Double Latitude = 48.858844d;
-    protected static Double Longitude = 2.294351d;
+    protected  Double latitude;
+    protected  Double longitude;
 
     protected Instagram instagram;
+
+    // The minimum distance to change Updates in meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+
+    // The minimum time between updates in milliseconds
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
+
+    // Declaring a Location Manager
+    protected LocationManager locationManager;
+
+    protected GPSTracker gps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +61,26 @@ public class GridViewActivity extends ActionBarActivity {
         setContentView(R.layout.activity_gridview);
         addListenerOnButton();
 
+        gps = new GPSTracker(GridViewActivity.this);
+
+        // check if GPS enabled
+        if(gps.canGetLocation()){
+
+             latitude = gps.getLatitude();
+             longitude = gps.getLongitude();
+//            double altitude = gps.getAltitude();
+
+
+        }else{
+            // can't get location
+            // GPS or Network is not enabled
+            // Ask user to enable GPS/network in settings
+            gps.showSettingsAlert();
+        }
+
         mGridView = (GridView) findViewById(R.id.gridView);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+
 
         //Initialize with empty data
         mGridData = new ArrayList<>();
@@ -118,10 +147,15 @@ public class GridViewActivity extends ActionBarActivity {
         protected Integer doInBackground(String... params) {
             Integer result = 0;
             try {
-                instagram = new Instagram(AccessToken, RestAdapter.LogLevel.BASIC);
-                GridItem item;
-                final Popular popular = instagram.getMediaEndpoint().getPopular();
-                parseResult(popular);
+//                instagram = new Instagram(AccessToken, RestAdapter.LogLevel.BASIC);
+//                GridItem item;
+//                final Popular popular = instagram.getMediaEndpoint().getPopular();
+                final SearchMediaResponse response = instagram.getMediaEndpoint().search(longitude, latitude);
+//                if (response.getMediaList() != null) {
+//                    for (Media media : response.getMediaList()) {
+//                        logger.info("link: {}", media.getLink());
+//                    }
+                parseResult(response);
                 result = 1; // Successful
             } catch (Exception e) {
                 Log.d(TAG, e.getLocalizedMessage());
@@ -167,7 +201,7 @@ public class GridViewActivity extends ActionBarActivity {
      *
      * @param popular
      */
-    private void parseResult(Popular popular) {
+    private void parseResult(SearchMediaResponse popular) {
         GridItem item;
         if (popular.getMediaList() != null) {
             for (Media media : popular.getMediaList()) {
@@ -179,4 +213,5 @@ public class GridViewActivity extends ActionBarActivity {
             }
         }
     }
+
 }
